@@ -80,7 +80,7 @@ jobs:
         path: dist
 
     - name: Serve app
-      run: nohup python -m http.server --directory dist 8000
+      run: python -m http.server --cgi --directory dist --cgi 8000  &> /dev/null &
 
     - name: Use private cypress director
       working-directory: e2e
