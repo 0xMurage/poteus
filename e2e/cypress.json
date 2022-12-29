@@ -1,0 +1,24 @@
+{
+  "baseUrl": "http://localhost:8000/",
+  "projectId": "uqx3f9",
+  "testFiles": "**/**.spec**",
+  "watchForFileChanges": true,
+  "waitForAnimations": true,
+  "numTestsKeptInMemory": 50,
+  "defaultCommandTimeout": 12000,
+  "requestTimeout": 10000,
+  "failOnStatusCode": false,
+  "video": false,
+  "screenshot": false,
+  "chromeWebSecurity": false,
+  "viewportHeight": 900,
+  "viewportWidth": 1440,
+  "reporter": "cypress-multi-reporters",
+  "reporterOptions": {
+    "configFile": "reporters/reporter-config.json"
+  },
+  "retries": {
+    "runMode": 3,
+    "openMode": 0
+  }
+}
