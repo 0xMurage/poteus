@@ -13,10 +13,6 @@
   "chromeWebSecurity": false,
   "viewportHeight": 900,
   "viewportWidth": 1440,
-  "reporter": "cypress-multi-reporters",
-  "reporterOptions": {
-    "configFile": "reporters/reporter-config.json"
-  },
   "retries": {
     "runMode": 3,
     "openMode": 0
