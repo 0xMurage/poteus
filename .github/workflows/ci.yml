@@ -1,0 +1,172 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**/*.md'
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - '**/*.md'
+
+jobs:
+  cancel_redundant_runs:
+    name: Cancel Redundant Runs
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: styfle/cancel-workflow-action@0.10.1
+        with:
+          access_token: ${{ github.token }}
+
+  build_app:
+    name: Build App
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/yarn
+            **/node_modules
+          key: ${{ runner.os }}-CI-${{ hashFiles('**/yarn.lock') }}
+        
+      - name: Install App Dependencies
+        run: yarn --frozen-lockfile
+        working-directory: app
+
+      - name: Build App
+        run: yarn build
+        working-directory: app
+
+      - name: Upload the build output
+        uses: actions/upload-artifact@v3
+        with:
+          name: app_build
+          path: app/dist
+
+  integration_test:
+    name: Cypress E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [build_app]
+    strategy:
+      fail-fast: false
+      matrix:
+        containers: [1, 2, 3, 4, 5, 6]
+
+    steps:
+    - name: Setup node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 14
+
+    - name: Check out repository code
+      uses: actions/checkout@v3
+
+    - name: Cache node modules
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cache/yarn
+          ~/.cache/Cypress
+          **/node_modules
+        key: ${{ runner.os }}-CI-${{ hashFiles('**/yarn.lock') }}
+
+    - name: Install e2e Dependencies
+      run: yarn --frozen-lockfile
+      working-directory: e2e
+
+    - name: Download app build
+      uses: actions/download-artifact@v3
+      with:
+        name: app_build
+        path: dist
+
+    - name: Serve app
+      run: nohup python -m http.server --directory dist 8000
+
+    - name: Use private cypress director
+      working-directory: e2e
+      run: sed -i 's/api\.cypress\.io/asha-cypress\.fly\.dev/g' $(npx cypress cache path)/$(node -p "require('cypress/package.json').version")/Cypress/resources/app/packages/server/config/app.yml
+
+    - name: Run Cypress
+      uses: cypress-io/github-action@v2
+      if: "github.ref != 'refs/heads/staging' && !contains(github.event.issue.labels.*.name, 'Ready for Review') && !contains(github.event.issue.labels.*.name, 'Percy')"
+      with:
+        working-directory: e2e
+        wait-on: 'http://localhost:8000'
+        parallel: true
+        record: true
+        ci-build-id: '${{ github.sha }}-${{ github.workflow }}-${{ github.event_name }}'
+        install: false
+      env:
+        CYPRESS_RECORD_KEY: doesnt-matter
+        CYPRESS_VIDEO: true
+        CYPRESS_SCREENSHOT: true
+        PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
+        PERCY_PARALLEL_NONCE: '${{ github.sha }}-${{ github.workflow }}-${{ github.event_name }}'
+        PERCY_PARALLEL_TOTAL: 6
+    
+    - name: Run Cypress with Percy
+      uses: cypress-io/github-action@v2
+      if: "github.ref == 'refs/heads/staging'"
+      with:
+        working-directory: e2e
+        wait-on: 'http://localhost:8000'
+        parallel: true
+        record: true
+        ci-build-id: '${{ github.sha }}-${{ github.workflow }}-${{ github.event_name }}'
+        install: false
+        command-prefix: 'percy exec --'
+      env:
+        CYPRESS_RECORD_KEY: doesnt-matter
+        PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
+        PERCY_PARALLEL_NONCE: '${{ github.sha }}-${{ github.workflow }}-${{ github.event_name }}'
+        PERCY_PARALLEL_TOTAL: 6
+
+    - name: Save Recordings
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: cypress-recordings
+        path: |
+          e2e/cypress/videos/
+          e2e/cypress/screenshots/
+
+  finalize-percy:
+    name: Finalize Percy
+    needs: ['integration_test']
+    defaults:
+      run:
+        shell: bash
+    env:
+      PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 14
+
+    - name: Add percy globally
+      run: yarn global add @percy/cli
+
+    - name: Run Percy build
+      run: npx percy build:finalize

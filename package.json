@@ -2,10 +2,5 @@
   "name": "poteus",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "MIT",
-  "scripts": {
-    "install": "yarn --cwd app & yarn --cwd e2e",
-    "postinstall": "yarn --cwd app build",
-    "start": "python -m http.server --directory app/dist 8000"
-  }
+  "license": "MIT"
 }

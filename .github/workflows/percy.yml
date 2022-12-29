@@ -1,0 +1,104 @@
+
+name: Percy
+
+on:
+  pull_request:
+    types: [ labeled ]
+
+jobs:
+  build_app:
+    name: Build App
+    if: ${{ github.event.label.name == 'Ready For Review' || github.event.label.name == 'Percy' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up node version
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/yarn
+            ~/.cache/Cypress
+            **/node_modules
+          key: ${{ runner.os }}-percy-${{ hashFiles('**/yarn.lock') }}
+        
+      - name: Install App Dependencies
+        run: yarn --frozen-lockfile
+        working-directory: app
+
+      - name: Build App
+        run: yarn build
+        working-directory: app
+
+      - name: Upload the build output
+        uses: actions/upload-artifact@v3
+        with:
+          name: app_build
+          path: app/dist
+
+  integration_test:
+    name: Cypress & Percy
+    runs-on: ubuntu-latest
+    needs: [build_app]
+    strategy:
+      fail-fast: false
+      matrix:
+        containers: [1, 2, 3, 4, 5, 6]
+
+    steps:
+    - name: Set up node version
+      uses: actions/setup-node@v3
+      with:
+        node-version: 14
+
+    - name: Check out repository code
+      uses: actions/checkout@v3
+
+    - name: Cache node modules
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cache/yarn
+          ~/.cache/Cypress
+          **/node_modules
+        key: ${{ runner.os }}-percy-${{ hashFiles('**/yarn.lock') }}
+
+    - name: Install e2e Dependencies
+      run: yarn --frozen-lockfile
+      working-directory: e2e
+
+    - name: Download app build
+      uses: actions/download-artifact@v3
+      with:
+        name: app_build
+        path: dist
+
+    - name: Serve app
+      run: nohup python -m http.server --directory dist 8000
+
+    - name: Use private cypress director
+      working-directory: e2e
+      run: sed -i 's/api\.cypress\.io/asha-cypress\.fly\.dev/g' $(npx cypress cache path)/$(node -p "require('cypress/package.json').version")/Cypress/resources/app/packages/server/config/app.yml
+
+
+    - name: Run Cypress with Percy
+      uses: cypress-io/github-action@v2
+      with:
+        working-directory: e2e
+        wait-on: 'http://localhost:8000'
+        parallel: true
+        record: true
+        ci-build-id: '${{ github.sha }}-${{ github.workflow }}-${{ github.event_name }}'
+        install: false
+        command-prefix: 'percy exec --parallel --'
+      env:
+        CYPRESS_RECORD_KEY: doesnt-matter
+        PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
+        PERCY_PARALLEL_NONCE: '${{ github.sha }}-${{ github.workflow }}-${{ github.event_name }}'
+        PERCY_PARALLEL_TOTAL: 6
