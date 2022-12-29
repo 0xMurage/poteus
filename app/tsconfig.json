@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "moduleResolution": "Node",
+    "esModuleInterop": false,
+    "lib": [
+      "dom",
+      "es6",
+      "es5",
+      "ES2018.Promise"
+    ],
+    "allowJs": false,
+    "checkJs": false,
+    "sourceMap": false,
+    "rootDir": "assets/ts",
+    "outDir": "dist/js",
+    "removeComments": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": false,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}

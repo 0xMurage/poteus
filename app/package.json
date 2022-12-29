@@ -1,0 +1,33 @@
+{
+  "name": "personal-site",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "concurrently  yarn:watch:ts  yarn:watch:sass",
+    "watch:sass": "sass assets/sass/:dist/css/ --watch --update",
+    "watch:ts": "tsc -b tsconfig.json --watch",
+    "build:sass": "sass assets/sass/:dist/css/ -s compressed --no-source-map",
+    "build:ts": "tsc -b tsconfig.json ",
+    "sass:prefix": "postcss dist/css/*.css --use autoprefixer --no-map  -d dist/css/",
+    "prebuild": "git clean -Xfd dist/",
+    "build": "yarn build:ts && yarn build:sass && yarn sass:prefix",
+    "postbuild": "node copy 404.html contact-me.html index.html portfolio.html resume.html robots.txt sitemap.xml assets/images assets/icons"
+  },
+  "browserslist": [
+    "last 4 versions",
+    "cover 99.5%",
+    "not IE 10"
+  ],
+  "author": "Murage (https://murageyun.com)",
+  "license": "MIT",
+  "devDependencies": {
+    "@fingerprintjs/fingerprintjs": "^3.3.6",
+    "autoprefixer": "^10.4.8",
+    "concurrently": "^7.3.0",
+    "postcss": "^8.4.16",
+    "postcss-cli": "^10.0.0",
+    "sass": "^1.54.4",
+    "typescript": "^4.7.4"
+  },
+  "main": "index.js"
+}
