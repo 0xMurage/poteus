@@ -19,7 +19,7 @@ window.addEventListener('DOMContentLoaded', () => {
         })
     }
 
-  lazyloadScript('/assets/js/fingerprintjs@3.3.2.min.js')
+  lazyloadScript('/js/fingerprintjs@3.3.2.min.js')
 
     fingerprintLoaded()
         .then(() => {
