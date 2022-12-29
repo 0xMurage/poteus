@@ -96,9 +96,8 @@ jobs:
         record: true
         ci-build-id: '${{ github.sha }}-${{ github.workflow }}-${{ github.event_name }}'
         install: false
-        command-prefix: 'percy exec --parallel --'
+        command-prefix: 'percy exec --'
       env:
         CYPRESS_RECORD_KEY: doesnt-matter
         PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
-        PERCY_PARALLEL_NONCE: '${{ github.sha }}-${{ github.workflow }}-${{ github.event_name }}'
         PERCY_PARALLEL_TOTAL: 6
