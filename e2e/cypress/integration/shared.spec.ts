@@ -9,6 +9,8 @@ describe('Top navigation',()=>{
         cy.get('nav.navbar>.menu>.nav-item > .nav-link')
             .should('be.visible')
             .should('have.length',4);
+
+        cy.percySnapshot();
     })
 
     it('Should see home menu link',()=>{

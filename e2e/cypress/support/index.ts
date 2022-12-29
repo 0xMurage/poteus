@@ -22,3 +22,5 @@
  * 
  *
  */
+
+import '@percy/cypress';
