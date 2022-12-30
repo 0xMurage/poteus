@@ -121,7 +121,7 @@ jobs:
     
     - name: Run Cypress with Percy
       uses: cypress-io/github-action@v2
-      if: "github.ref == 'refs/heads/staging'"
+      if: "github.ref == 'refs/heads/main'"
       with:
         working-directory: e2e
         wait-on: 'http://localhost:8000'
