@@ -64,7 +64,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        containers: [1, 2, 3, 4, 5, 6,7]
+        containers: [1, 2, 3, 4, 5, 6,7,8]
 
     steps:
     - name: Setup node
@@ -117,7 +117,7 @@ jobs:
         CYPRESS_SCREENSHOT: true
         PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
         PERCY_PARALLEL_NONCE: '${{ github.sha }}-${{ github.workflow }}-${{ github.event_name }}'
-        PERCY_PARALLEL_TOTAL: 6
+        PERCY_PARALLEL_TOTAL: 8
     
     - name: Run Cypress with Percy
       uses: cypress-io/github-action@v2

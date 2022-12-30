@@ -100,4 +100,4 @@ jobs:
       env:
         CYPRESS_RECORD_KEY: doesnt-matter
         PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
-        PERCY_PARALLEL_TOTAL: 6
+        PERCY_PARALLEL_TOTAL: 8
