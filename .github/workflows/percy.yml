@@ -44,6 +44,9 @@ jobs:
       - name: Generate percy nonce
         run: echo "PERCY_NONCE=${{ github.sha }}-${{ github.workflow }}-${{ github.event_name }}-$(date +%s)" >> $GITHUB_ENV
 
+      - name: Log percy nonce
+        run: echo "${{ env.PERCY_NONCE }}"
+
   integration_test:
     name: Cypress & Percy
     runs-on: ubuntu-latest
@@ -58,6 +61,9 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: 14
+
+    - name: Log percy nonce
+      run: echo "${{ env.PERCY_NONCE }}"
 
     - name: Check out repository code
       uses: actions/checkout@v3
