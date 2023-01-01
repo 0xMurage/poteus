@@ -88,7 +88,7 @@ jobs:
 
 
     - name: Run Cypress with Percy
-      uses: cypress-io/github-action@v2
+      uses: cypress-io/github-action@v5
       with:
         working-directory: e2e
         wait-on: 'http://localhost:8000'
@@ -100,4 +100,5 @@ jobs:
       env:
         CYPRESS_RECORD_KEY: doesnt-matter
         PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
+        PERCY_PARALLEL_NONCE: '${{ github.sha }}-${{ github.workflow }}-${{ github.event_name }}'
         PERCY_PARALLEL_TOTAL: 8
