@@ -145,6 +145,7 @@ jobs:
   finalize-percy:
     name: Finalize Percy
     needs: ['integration_test']
+    if: "github.ref == 'refs/heads/main'"
     defaults:
       run:
         shell: bash
