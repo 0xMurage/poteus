@@ -42,10 +42,11 @@ jobs:
           name: app_build
           path: app/dist
       - name: Generate percy nonce
-        run: echo "PERCY_NONCE=${{ github.sha }}-${{ github.workflow }}-${{ github.event_name }}-$(date +%s)" >> $GITHUB_ENV
+        id: nonce_generator
+        run: echo "PERCY_NONCE=${{ github.sha }}-${{ github.workflow }}-${{ github.event_name }}-$(date +%s)" >> $GITHUB_OUTPUT
 
-      - name: Log percy nonce
-        run: echo "${{ env.PERCY_NONCE }}"
+    outputs:
+        PERCY_NONCE: ${{ steps.nonce_generator.outputs.PERCY_NONCE }}
 
   integration_test:
     name: Cypress & Percy
@@ -63,7 +64,7 @@ jobs:
         node-version: 14
 
     - name: Log percy nonce
-      run: echo "${{ env.PERCY_NONCE }}"
+      run: echo "${{needs.build_app.outputs.PERCY_NONCE}}"
 
     - name: Check out repository code
       uses: actions/checkout@v3
@@ -108,6 +109,6 @@ jobs:
       env:
         CYPRESS_RECORD_KEY: doesnt-matter
         PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
-        PERCY_PARALLEL_NONCE: '${{ env.PERCY_NONCE }}'
+        PERCY_PARALLEL_NONCE: '${{needs.build_app.outputs.PERCY_NONCE}}'
         PERCY_PARALLEL_TOTAL: 8
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
