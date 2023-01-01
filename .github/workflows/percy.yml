@@ -43,7 +43,7 @@ jobs:
           path: app/dist
       - name: Generate percy nonce
         id: nonce_generator
-        run: echo "PERCY_NONCE=${{ github.sha }}-${{ github.workflow }}-${{ github.event_name }}-$(date +%s)" >> $GITHUB_OUTPUT
+        run: echo "PERCY_NONCE=${{ github.sha }}-$(date +%s)" >> $GITHUB_OUTPUT
 
     outputs:
         PERCY_NONCE: ${{ steps.nonce_generator.outputs.PERCY_NONCE }}
@@ -62,9 +62,6 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: 14
-
-    - name: Log percy nonce
-      run: echo "${{needs.build_app.outputs.PERCY_NONCE}}"
 
     - name: Check out repository code
       uses: actions/checkout@v3
