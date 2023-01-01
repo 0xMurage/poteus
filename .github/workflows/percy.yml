@@ -100,7 +100,7 @@ jobs:
         wait-on: 'http://localhost:8000'
         parallel: true
         record: true
-        ci-build-id: '${{needs.build_app.outputs.RUN_NONCE}}'
+        ci-build-id: '${{ github.sha }}-${{ github.workflow }}-${{ github.event_name }}'
         install: false
         command-prefix: 'percy exec --'
       env:
