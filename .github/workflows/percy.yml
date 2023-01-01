@@ -43,10 +43,10 @@ jobs:
           path: app/dist
       - name: Generate percy nonce
         id: nonce_generator
-        run: echo "PERCY_NONCE=${{ github.sha }}-$(date +%s)" >> $GITHUB_OUTPUT
+        run: echo "RUN_NONCE=${{ github.sha }}-$(date +%s)" >> $GITHUB_OUTPUT
 
     outputs:
-        PERCY_NONCE: ${{ steps.nonce_generator.outputs.PERCY_NONCE }}
+      RUN_NONCE: ${{ steps.nonce_generator.outputs.RUN_NONCE }}
 
   integration_test:
     name: Cypress & Percy
@@ -100,12 +100,12 @@ jobs:
         wait-on: 'http://localhost:8000'
         parallel: true
         record: true
-        ci-build-id: '${{ github.sha }}-${{ github.workflow }}-${{ github.event_name }}'
+        ci-build-id: '${{needs.build_app.outputs.RUN_NONCE}}'
         install: false
         command-prefix: 'percy exec --'
       env:
         CYPRESS_RECORD_KEY: doesnt-matter
         PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
-        PERCY_PARALLEL_NONCE: '${{needs.build_app.outputs.PERCY_NONCE}}'
+        PERCY_PARALLEL_NONCE: '${{needs.build_app.outputs.RUN_NONCE}}'
         PERCY_PARALLEL_TOTAL: 8
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
