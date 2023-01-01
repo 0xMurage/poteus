@@ -102,3 +102,4 @@ jobs:
         PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
         PERCY_PARALLEL_NONCE: '${{ github.sha }}-${{ github.workflow }}-${{ github.event_name }}'
         PERCY_PARALLEL_TOTAL: 8
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
