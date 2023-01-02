@@ -35,7 +35,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Cache node modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cache/yarn
@@ -64,7 +64,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        containers: [1, 2, 3, 4, 5, 6]
+        containers: [1, 2, 3, 4, 5, 6,7,8]
 
     steps:
     - name: Setup node
@@ -76,7 +76,7 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Cache node modules
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: |
           ~/.cache/yarn
@@ -95,7 +95,7 @@ jobs:
         path: dist
 
     - name: Serve app
-      run: nohup python -m http.server --directory dist 8000
+      run: python -m http.server --cgi --directory dist --cgi 8000  &> /dev/null &
 
     - name: Use private cypress director
       working-directory: e2e
@@ -115,13 +115,10 @@ jobs:
         CYPRESS_RECORD_KEY: doesnt-matter
         CYPRESS_VIDEO: true
         CYPRESS_SCREENSHOT: true
-        PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
-        PERCY_PARALLEL_NONCE: '${{ github.sha }}-${{ github.workflow }}-${{ github.event_name }}'
-        PERCY_PARALLEL_TOTAL: 6
-    
+
     - name: Run Cypress with Percy
       uses: cypress-io/github-action@v2
-      if: "github.ref == 'refs/heads/staging'"
+      if: "github.ref == 'refs/heads/main'"
       with:
         working-directory: e2e
         wait-on: 'http://localhost:8000'
@@ -148,6 +145,7 @@ jobs:
   finalize-percy:
     name: Finalize Percy
     needs: ['integration_test']
+    if: "github.ref == 'refs/heads/main'"
     defaults:
       run:
         shell: bash
