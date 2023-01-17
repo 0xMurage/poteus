@@ -56,6 +56,13 @@ jobs:
           name: app_build
           path: app/dist
 
+      - name: Generate percy nonce
+        id: nonce_generator
+        run: echo "RUN_NONCE=$(date +%s)-$(date +%s)" >> $GITHUB_OUTPUT
+
+    outputs:
+      RUN_NONCE: ${{ steps.nonce_generator.outputs.RUN_NONCE }}
+
   integration_test:
     name: Cypress E2E Tests
     runs-on: ubuntu-latest
@@ -130,7 +137,7 @@ jobs:
       env:
         CYPRESS_RECORD_KEY: doesnt-matter
         PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
-        PERCY_PARALLEL_NONCE: '${{ github.sha }}-${{ github.workflow }}-${{ github.event_name }}'
+        PERCY_PARALLEL_NONCE: '${{needs.build_app.outputs.RUN_NONCE-${{ github.workflow }}-${{ github.event_name }}'
         PERCY_PARALLEL_TOTAL: 6
 
     - name: Save Recordings
