@@ -131,13 +131,13 @@ jobs:
         wait-on: 'http://localhost:8000'
         parallel: true
         record: true
-        ci-build-id: '${{ github.sha }}-${{ github.workflow }}-${{ github.event_name }}'
+        ci-build-id: '${{needs.build_app.outputs.RUN_NONCE}}-${{ github.workflow }}-${{ github.event_name }}'
         install: false
         command-prefix: 'percy exec --'
       env:
         CYPRESS_RECORD_KEY: doesnt-matter
         PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
-        PERCY_PARALLEL_NONCE: '${{needs.build_app.outputs.RUN_NONCE-${{ github.workflow }}-${{ github.event_name }}'
+        PERCY_PARALLEL_NONCE: '${{needs.build_app.outputs.RUN_NONCE}}-${{ github.workflow }}-${{ github.event_name }}'
         PERCY_PARALLEL_TOTAL: 6
 
     - name: Save Recordings
