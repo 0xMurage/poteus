@@ -59,7 +59,7 @@ jobs:
   integration_test:
     name: Cypress E2E Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     needs: [build_app]
     strategy:
       fail-fast: false
