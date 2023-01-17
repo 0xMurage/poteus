@@ -116,7 +116,7 @@ jobs:
         wait-on: 'http://localhost:8000'
         parallel: true
         record: true
-        ci-build-id: '${{ github.sha }}-${{ github.workflow }}-${{ github.event_name }}'
+        ci-build-id: '${{needs.build_app.outputs.RUN_NONCE}}-${{ github.workflow }}-${{ github.event_name }}'
         install: false
       env:
         CYPRESS_RECORD_KEY: doesnt-matter
@@ -140,38 +140,11 @@ jobs:
         PERCY_PARALLEL_NONCE: '${{needs.build_app.outputs.RUN_NONCE}}-${{ github.workflow }}-${{ github.event_name }}'
         PERCY_PARALLEL_TOTAL: 6
 
-    - name: Save Recordings
-      if: ${{ always() }}
-      uses: actions/upload-artifact@v3
-      with:
-        name: cypress-recordings
-        path: |
-          e2e/cypress/videos/
-          e2e/cypress/screenshots/
-
-  finalize-percy:
-    name: Finalize Percy
-    needs: ['integration_test']
-    if: "github.ref == 'refs/heads/main'"
-    defaults:
-      run:
-        shell: bash
-    env:
-      PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
-
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Setup node
-      uses: actions/setup-node@v3
-      with:
-        node-version: 14
-
-    - name: Add percy globally
-      run: yarn global add @percy/cli
-
-    - name: Run Percy build
-      run: npx percy build:finalize
+#    - name: Save Recordings
+#      if: ${{ always() }}
+#      uses: actions/upload-artifact@v3
+#      with:
+#        name: cypress-recordings
+#        path: |
+#          e2e/cypress/videos/
+#          e2e/cypress/screenshots/
