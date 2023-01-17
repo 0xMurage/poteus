@@ -56,6 +56,13 @@ jobs:
           name: app_build
           path: app/dist
 
+      - name: Generate percy nonce
+        id: nonce_generator
+        run: echo "RUN_NONCE=$(date +%s)-$(date +%s)" >> $GITHUB_OUTPUT
+
+    outputs:
+      RUN_NONCE: ${{ steps.nonce_generator.outputs.RUN_NONCE }}
+
   integration_test:
     name: Cypress E2E Tests
     runs-on: ubuntu-latest
@@ -109,7 +116,7 @@ jobs:
         wait-on: 'http://localhost:8000'
         parallel: true
         record: true
-        ci-build-id: '${{ github.sha }}-${{ github.workflow }}-${{ github.event_name }}'
+        ci-build-id: '${{needs.build_app.outputs.RUN_NONCE}}-${{ github.workflow }}-${{ github.event_name }}'
         install: false
       env:
         CYPRESS_RECORD_KEY: doesnt-matter
@@ -124,47 +131,20 @@ jobs:
         wait-on: 'http://localhost:8000'
         parallel: true
         record: true
-        ci-build-id: '${{ github.sha }}-${{ github.workflow }}-${{ github.event_name }}'
+        ci-build-id: '${{needs.build_app.outputs.RUN_NONCE}}-${{ github.workflow }}-${{ github.event_name }}'
         install: false
         command-prefix: 'percy exec --'
       env:
         CYPRESS_RECORD_KEY: doesnt-matter
         PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
-        PERCY_PARALLEL_NONCE: '${{ github.sha }}-${{ github.workflow }}-${{ github.event_name }}'
+        PERCY_PARALLEL_NONCE: '${{needs.build_app.outputs.RUN_NONCE}}-${{ github.workflow }}-${{ github.event_name }}'
         PERCY_PARALLEL_TOTAL: 6
 
-    - name: Save Recordings
-      if: ${{ always() }}
-      uses: actions/upload-artifact@v3
-      with:
-        name: cypress-recordings
-        path: |
-          e2e/cypress/videos/
-          e2e/cypress/screenshots/
-
-  finalize-percy:
-    name: Finalize Percy
-    needs: ['integration_test']
-    if: "github.ref == 'refs/heads/main'"
-    defaults:
-      run:
-        shell: bash
-    env:
-      PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
-
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Setup node
-      uses: actions/setup-node@v3
-      with:
-        node-version: 14
-
-    - name: Add percy globally
-      run: yarn global add @percy/cli
-
-    - name: Run Percy build
-      run: npx percy build:finalize
+#    - name: Save Recordings
+#      if: ${{ always() }}
+#      uses: actions/upload-artifact@v3
+#      with:
+#        name: cypress-recordings
+#        path: |
+#          e2e/cypress/videos/
+#          e2e/cypress/screenshots/
